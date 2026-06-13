@@ -5,9 +5,12 @@
 > anything in the "STOP conditions" section occurs, stop and report — do not
 > improvise. When done, update the status row for this plan in `plans/README.md`.
 >
-> **Drift check (run first)**: Run `ls render/`. You should see `image.go`,
-> `image_test.go`, `font.go`, and `fonts/` (from plan 004). If `render/pdf.go`
-> already exists, read it and compare against the Target; on a mismatch, STOP.
+> **Drift check (run first)**: This plan was written against commit `e90880a`.
+> Run `git diff --stat e90880a..HEAD -- render/`. Plan 004 should have added
+> `render/image.go`, `render/image_test.go`, `render/font.go`, and
+> `render/fonts/`. Confirm `RenderPage` matches "Current state". If
+> `render/pdf.go` already exists, read it and compare against the Target; on a
+> mismatch, STOP.
 
 ## Status
 
@@ -16,7 +19,7 @@
 - **Risk**: MED
 - **Depends on**: plans/004-image-rendering.md
 - **Category**: correctness + tests
-- **Planned at**: no git repo (greenfield), 2026-06-13
+- **Planned at**: commit `e90880a`, 2026-06-13
 
 ## Why this matters
 

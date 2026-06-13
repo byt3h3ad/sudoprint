@@ -5,9 +5,12 @@
 > anything in the "STOP conditions" section occurs, stop and report — do not
 > improvise. When done, update the status row for this plan in `plans/README.md`.
 >
-> **Drift check (run first)**: Run `ls`. You should see `go.mod`, `puzzle/`,
-> `render/`, `fonts/`, `PLAN.md`, `plans/` and NO `main.go`. If `main.go`
-> already exists, read it and compare against the Target; on a mismatch, STOP.
+> **Drift check (run first)**: This plan was written against commit `e90880a`.
+> Run `git diff --stat e90880a..HEAD`. You should see the files added by plans
+> 001-005 (`go.mod`, `puzzle/`, `render/`, fonts) and NO `main.go`. Confirm the
+> `puzzle.Generate`, `render.RenderPage`, and `render.BundlePDF` signatures in
+> "Current state" match the live code. If `main.go` already exists, read it and
+> compare against the Target; on a mismatch, STOP.
 
 ## Status
 
@@ -16,7 +19,7 @@
 - **Risk**: LOW
 - **Depends on**: plans/003-generator.md, plans/004-image-rendering.md, plans/005-pdf-bundling.md
 - **Category**: dx + correctness
-- **Planned at**: no git repo (greenfield), 2026-06-13
+- **Planned at**: commit `e90880a`, 2026-06-13
 
 ## Why this matters
 

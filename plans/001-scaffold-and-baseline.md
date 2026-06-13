@@ -6,11 +6,11 @@
 > report — do not improvise. When done, update the status row for this plan
 > in `plans/README.md`.
 >
-> **Drift check (run first)**: This is a greenfield build with no git history.
-> Run `ls` in the repo root. You should see only `PLAN.md` and `plans/`. If you
-> also see `go.mod`, `main.go`, `puzzle/`, or `render/` already present, the
-> repo has drifted from the assumption that this is a fresh build — treat that
-> as a STOP condition and report what exists.
+> **Drift check (run first)**: This plan was written against commit `e90880a`
+> (the initial repo state: only `PLAN.md`, `plans/`, `.gitignore`,
+> `.gitattributes`). Run `git diff --stat e90880a..HEAD` — it should be empty.
+> If it lists `go.mod`, `main.go`, `puzzle/`, or `render/`, the repo has moved
+> past a fresh build; treat that as a STOP condition and report what exists.
 
 ## Status
 
@@ -19,7 +19,7 @@
 - **Risk**: LOW
 - **Depends on**: none
 - **Category**: dx
-- **Planned at**: no git repo (greenfield), 2026-06-13
+- **Planned at**: commit `e90880a`, 2026-06-13
 
 ## Why this matters
 

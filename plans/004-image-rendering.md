@@ -5,9 +5,12 @@
 > anything in the "STOP conditions" section occurs, stop and report — do not
 > improvise. When done, update the status row for this plan in `plans/README.md`.
 >
-> **Drift check (run first)**: Run `ls render/` (the directory may not exist
-> yet — that is expected; create it). If `render/image.go` already exists, read
-> it and compare against the Target before proceeding; on a mismatch, STOP.
+> **Drift check (run first)**: This plan was written against commit `e90880a`.
+> Run `git diff --stat e90880a..HEAD -- puzzle/ render/`. Confirm the
+> `puzzle.Puzzle` type in "Current state" matches the live `puzzle` package.
+> The `render/` directory may not exist yet — that is expected; create it. If
+> `render/image.go` already exists, read it and compare against the Target; on a
+> mismatch, STOP.
 
 ## Status
 
@@ -16,7 +19,7 @@
 - **Risk**: MED
 - **Depends on**: plans/003-generator.md (needs the `puzzle.Puzzle` type)
 - **Category**: correctness + tests
-- **Planned at**: no git repo (greenfield), 2026-06-13
+- **Planned at**: commit `e90880a`, 2026-06-13
 
 ## Why this matters
 

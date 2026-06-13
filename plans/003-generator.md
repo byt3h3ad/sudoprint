@@ -5,9 +5,12 @@
 > anything in the "STOP conditions" section occurs, stop and report — do not
 > improvise. When done, update the status row for this plan in `plans/README.md`.
 >
-> **Drift check (run first)**: Run `ls puzzle/`. You should see `solve.go` and
-> `solve_test.go` (from plan 002). If `generate.go` already exists, read it and
-> compare against the "Target" below; on a mismatch, STOP and report.
+> **Drift check (run first)**: This plan was written against commit `e90880a`.
+> Run `git diff --stat e90880a..HEAD -- puzzle/`. Plan 002 should have added
+> `puzzle/solve.go` and `puzzle/solve_test.go`; confirm the `Grid` /
+> `CountSolutions` / `Solve` API in "Current state" matches the live code. If
+> `puzzle/generate.go` already exists, read it and compare against the "Target";
+> on a mismatch, STOP and report.
 
 ## Status
 
@@ -16,7 +19,7 @@
 - **Risk**: MED
 - **Depends on**: plans/002-solver.md
 - **Category**: correctness + tests
-- **Planned at**: no git repo (greenfield), 2026-06-13
+- **Planned at**: commit `e90880a`, 2026-06-13
 
 ## Why this matters
 

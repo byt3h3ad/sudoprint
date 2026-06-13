@@ -6,10 +6,11 @@
 > report — do not improvise. When done, update the status row for this plan
 > in `plans/README.md`.
 >
-> **Drift check (run first)**: Run `ls puzzle/`. You should see `doc.go` and
-> `doc_test.go` (from plan 001) and nothing else. If `solve.go` already exists,
-> read it and compare against the "Target" below before proceeding; on a
-> mismatch, STOP and report.
+> **Drift check (run first)**: This plan was written against commit `e90880a`.
+> Run `git diff --stat e90880a..HEAD -- puzzle/`. Plan 001 should have added
+> `puzzle/doc.go` and `puzzle/doc_test.go` and nothing else under `puzzle/`. If
+> `puzzle/solve.go` already exists, read it and compare against the "Target"
+> below before proceeding; on a mismatch, STOP and report.
 
 ## Status
 
@@ -18,7 +19,7 @@
 - **Risk**: LOW
 - **Depends on**: plans/001-scaffold-and-baseline.md
 - **Category**: tests + correctness
-- **Planned at**: no git repo (greenfield), 2026-06-13
+- **Planned at**: commit `e90880a`, 2026-06-13
 
 ## Why this matters
 
