@@ -72,15 +72,16 @@ Geometry from `PLAN.md` §115–164 (authoritative):
 ## Scope
 
 **In scope**:
+- `fonts/fonts.go` (create) — turns the existing `fonts/` directory into a Go
+  package that embeds and exports the font bytes (single source of truth; see
+  "Font embedding" and Step 1)
+- `render/font.go` (create) — the `newFace` helper; imports `sudoprint/fonts`
 - `render/image.go` (create)
 - `render/image_test.go` (create)
-- the `//go:embed fonts/JetBrainsMono-Regular.ttf` directive — but note the
-  embed path is relative to the source file. Because `image.go` lives in
-  `render/` and the font is in `fonts/` at the repo root, embedding directly is
-  awkward. **Use this approach instead**: put the embed in a file at the repo
-  root or pass the font bytes in. See Step 1.
 
 **Out of scope** (do NOT touch):
+- `fonts/JetBrainsMono-Regular.ttf` — already committed; do NOT move, copy, or
+  modify it. There must remain exactly ONE copy of the `.ttf`.
 - `render/pdf.go` — plan 005.
 - `puzzle/*`, `main.go`.
 
@@ -110,61 +111,49 @@ Note this signature differs from `PLAN.md` §178 (`RenderPage(left, right Puzzle
 by adding a `solution bool`, so one function renders both the puzzle page and the
 solution page. This is intentional — it avoids duplicating layout code.
 
-### Font embedding
+### Font embedding (single copy — no duplication)
 
-`go:embed` paths cannot reference parent directories (`../fonts/...` is illegal).
-Resolve by embedding at the repo root and exposing the bytes to the `render`
-package. Create a tiny root file `assets.go`:
+`go:embed` can only reach files in the **same directory** as the `.go` file or a
+subdirectory — it cannot reference a parent (`../fonts/...` is illegal). The font
+lives at the repo-root `fonts/JetBrainsMono-Regular.ttf`, but the `render`
+package needs its bytes. Resolve this **without copying the font** by making
+`fonts/` its own tiny package that embeds and exports the bytes, then importing
+it from `render`.
+
+Create `fonts/fonts.go` (the `.ttf` already sits in this directory, so the embed
+path is just the bare filename):
 
 ```go
-package main
+// Package fonts embeds the bundled TTF assets.
+package fonts
 
 import _ "embed"
 
-//go:embed fonts/JetBrainsMono-Regular.ttf
-var fontBytes []byte
+//go:embed JetBrainsMono-Regular.ttf
+var Regular []byte
 ```
 
-…but `render` cannot import `package main`. So instead, **embed inside the
-`render` package** by placing a copy reference: the simplest robust approach is
-to embed within `render/` using a font file located under `render/`. To avoid
-duplicating the font, do this:
+Then `render` imports `sudoprint/fonts` and uses `fonts.Regular`. There is
+exactly ONE copy of the `.ttf`, at its original path — do NOT copy the font into
+`render/`.
 
-- Move the embed into the `render` package with the directive pointing at a font
-  file inside the package directory. Create `render/fonts/` and place the TTF
-  there? That duplicates the asset.
-
-**Chosen approach (do this):** keep the single font at `fonts/` and load it via
-an embedded FS rooted at the repo, exposed through the `render` package by having
-`render` own the embed with a relative path that works. Concretely, create
-`render/font.go`:
+Create `render/font.go` with the face helper:
 
 ```go
 package render
 
 import (
-	_ "embed"
-
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
+
+	"sudoprint/fonts"
 )
 
-//go:embed fonts/JetBrainsMono-Regular.ttf
-var fontTTF []byte
-```
-
-and **copy** `fonts/JetBrainsMono-Regular.ttf` to `render/fonts/JetBrainsMono-Regular.ttf`
-so the embed path resolves within the package. The repo-root `fonts/` copy stays
-for reference; the embedded copy under `render/fonts/` is what ships. (One small
-binary duplicated in the repo is an acceptable tradeoff for a clean embed; do not
-spend effort building a shared-asset module.)
-
-Build a reusable face helper:
-
-```go
 func newFace(px float64) (font.Face, error) {
-	f, err := opentype.Parse(fontTTF)
-	if err != nil { return nil, err }
+	f, err := opentype.Parse(fonts.Regular)
+	if err != nil {
+		return nil, err
+	}
 	// DPI 72 makes Size in points equal pixels, so px maps 1:1.
 	return opentype.NewFace(f, &opentype.FaceOptions{
 		Size: px, DPI: 72, Hinting: font.HintingFull,
@@ -211,13 +200,17 @@ Finally draw the center divider: `fillRect(dst, 1753, 0, 1754, 2480, #DDDDDD)`.
 
 ### Step 1: Set up the embedded font and `newFace`
 
-Copy `fonts/JetBrainsMono-Regular.ttf` to `render/fonts/JetBrainsMono-Regular.ttf`.
-Create `render/font.go` with the embed directive and `newFace` helper above.
+Create `fonts/fonts.go` (the `fonts/` directory already contains
+`JetBrainsMono-Regular.ttf`) with the `package fonts` embed shown in "Font
+embedding" above. Then create `render/font.go` with the `newFace` helper that
+imports `sudoprint/fonts`. Do NOT copy the `.ttf` anywhere.
 
-**Verify**: `go build ./render/` → exit 0 (proves the embed path resolves and the
-font parses are wired). If you get "pattern ...: no matching files found", the
-copy didn't land in `render/fonts/` — fix the path. STOP if the font fails to
-parse (`opentype.Parse` error) — the TTF may be corrupt.
+**Verify**: `go build ./fonts/ ./render/` → exit 0 (proves the embed directive
+resolves). If you get "pattern ...: no matching files found", the directive in
+`fonts/fonts.go` must name the file by its bare name
+(`//go:embed JetBrainsMono-Regular.ttf`), not a path. (The actual TTF parse runs
+at runtime inside `newFace`, so a corrupt-font error surfaces in the Step 3
+tests, not here — see STOP conditions.)
 
 ### Step 2: Write the render test first (red)
 
@@ -264,7 +257,9 @@ ALL must hold:
 
 - [ ] `render/image.go` defines `RenderPage(left, right puzzle.Puzzle, solution bool) (image.Image, error)`
 - [ ] Output image is exactly 3508×2480
-- [ ] Uses `golang.org/x/image/font/opentype`; `grep -rn "golang/freetype" render/` returns nothing
+- [ ] Font is embedded via the `fonts` package; exactly ONE copy of the `.ttf`
+      exists — `test ! -e render/fonts/JetBrainsMono-Regular.ttf` (no second copy)
+- [ ] Uses `golang.org/x/image/font/opentype`; `grep -rn "golang/freetype" fonts/ render/` returns nothing
 - [ ] Gridline positions computed via rounding (no `i*cellSize` accumulation) —
       reviewer-checkable in `image.go`
 - [ ] `go build ./...`, `go vet ./...`, `go test ./...` all exit 0
@@ -274,9 +269,9 @@ ALL must hold:
 
 Stop and report back if:
 
-- The `go:embed` directive cannot find the font even after copying it into
-  `render/fonts/` (report the exact build error).
-- `opentype.Parse(fontTTF)` returns an error — the font asset is bad.
+- The `go:embed` directive in `fonts/fonts.go` cannot find the font (report the
+  exact build error — the directive must use the bare filename, no path or `..`).
+- `opentype.Parse(fonts.Regular)` returns an error — the font asset is bad.
 - Text rendering produces a panic from `font.Drawer` — likely a nil face or
   out-of-bounds `Dot`; report the stack.
 
@@ -285,9 +280,9 @@ Stop and report back if:
 - If page DPI or size changes, every geometry constant (3508, 2480, 1754, 1228,
   margins, font sizes) must be revisited together — consider extracting them to
   named constants at the top of `image.go` to make that safe.
-- The font is duplicated at `fonts/` (reference) and `render/fonts/` (embedded).
-  If you update the font, update both, or remove the root copy. Note this in any
-  README.
+- The font lives in exactly one place: `fonts/JetBrainsMono-Regular.ttf`,
+  embedded and exported by the `fonts` package and imported by `render`. There is
+  no second copy to keep in sync.
 - Plan 005 (PDF) consumes the `image.Image` values this returns; keep the return
   type `image.Image`.
 - Reviewer should eyeball an actual rendered PNG once (run the tool after plan
