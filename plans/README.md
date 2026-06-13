@@ -28,7 +28,9 @@ Three design decisions were made during the review and are baked into the plans:
 | 003  | Puzzle generator (varied, ranged) | P1 | M | 002 | DONE (commit b340527) |
 | 004  | Two-puzzle PNG rendering | P1 | M | 003 | DONE (commit ff1ee7e) |
 | 005  | PDF bundling | P2 | M | 004 | DONE (commit d4f1c6f) |
-| 006  | CLI / main.go wiring | P2 | M | 003, 004, 005 | TODO |
+| 006  | CLI / main.go wiring | P2 | M | 003, 004, 005 | DONE (commit ba8c6b1) |
+
+**All plans complete — the tool builds, tests green, and runs end-to-end.**
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED (one-line rationale)
 
