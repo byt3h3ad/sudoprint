@@ -1,0 +1,41 @@
+# Compiled binary (this project's output of `go build -o sudoprint .`)
+/sudoprint
+/sudoprint.exe
+
+# Go build / test artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+go.work.sum
+
+# Test & coverage output
+coverage.out
+coverage.html
+*.prof
+
+# Generated puzzle/solution output (the tool writes these; do not commit them)
+/out/
+/_smoke/
+puzzle_*.png
+solution_*.png
+puzzles.pdf
+solutions.pdf
+
+# Editor / IDE
+/.idea/
+/.vscode/
+*.swp
+*~
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Environment / secrets (none expected, but guard against accidents)
+.env
+.env.*

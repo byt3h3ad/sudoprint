@@ -1,0 +1,24 @@
+# Normalize line endings: text files are LF in the repo, checked out as-is.
+# This keeps diffs clean across Windows/macOS/Linux and silences CRLF warnings.
+* text=auto eol=lf
+
+# Go and common text sources
+*.go    text eol=lf
+*.mod   text eol=lf
+*.sum   text eol=lf
+*.md    text eol=lf
+*.txt   text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.json  text eol=lf
+
+# Binary assets — never touch line endings, exclude from text diffs
+*.ttf   binary
+*.otf   binary
+*.png   binary
+*.pdf   binary
+*.jpg   binary
+*.jpeg  binary
+
+# Let GitHub language stats ignore vendored/generated dirs if added later
+vendor/** linguist-vendored
