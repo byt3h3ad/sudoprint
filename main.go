@@ -59,6 +59,7 @@ func run(n int, difficulty, outDir string, makePDF, keepPNG bool, seed int64) er
 	var pngPaths []string // track for cleanup when !keepPNG
 
 	// 4. Generation loop.
+	m := manifest{Seed: seed, Difficulty: difficulty}
 	filesWritten := 0
 	for page := 1; page <= n; page++ {
 		left, err := puzzle.Generate(page*2-1, difficulty, rng)
@@ -96,6 +97,14 @@ func run(n int, difficulty, outDir string, makePDF, keepPNG bool, seed int64) er
 		fmt.Printf("page %d: #%d (clues %d), #%d (clues %d)\n",
 			page, left.ID, left.ClueCount, right.ID, right.ClueCount)
 
+		m.Pages = append(m.Pages, pageInfo{
+			Page: page,
+			Puzzles: []puzzleInfo{
+				{ID: left.ID, ClueCount: left.ClueCount},
+				{ID: right.ID, ClueCount: right.ClueCount},
+			},
+		})
+
 		if makePDF {
 			puzzleImgs = append(puzzleImgs, puzzleImg)
 			solutionImgs = append(solutionImgs, solutionImg)
@@ -125,6 +134,13 @@ func run(n int, difficulty, outDir string, makePDF, keepPNG bool, seed int64) er
 			}
 		}
 	}
+
+	// Write manifest.
+	manifestPath := filepath.Join(outDir, "manifest.json")
+	if err := writeManifest(m, manifestPath); err != nil {
+		return err
+	}
+	filesWritten++
 
 	// 6. Summary.
 	fmt.Printf("done: seed=%d, %d file(s) written to %s\n", seed, filesWritten, outDir)
