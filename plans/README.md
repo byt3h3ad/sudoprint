@@ -25,7 +25,7 @@ Three design decisions were made during the review and are baked into the plans:
 |------|-------|----------|--------|------------|--------|
 | 001  | Scaffold, deps, green baseline | P1 | S | — | DONE (commit 7177557; see follow-up F1) |
 | 002  | Backtracking solver + counter  | P1 | S | 001 | DONE (commit 948e491) |
-| 003  | Puzzle generator (varied, ranged) | P1 | M | 002 | TODO |
+| 003  | Puzzle generator (varied, ranged) | P1 | M | 002 | DONE (commit b340527) |
 | 004  | Two-puzzle PNG rendering | P1 | M | 003 | TODO |
 | 005  | PDF bundling | P2 | M | 004 | TODO |
 | 006  | CLI / main.go wiring | P2 | M | 003, 004, 005 | TODO |
