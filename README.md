@@ -269,5 +269,12 @@ Deliberately **not** built (yet):
 
 ---
 
+## License
+
+Released under the [MIT License](LICENSE). The bundled JetBrains Mono font is
+licensed separately under the SIL Open Font License.
+
+---
+
 <p align="center"><em>Generate. Print. Solve. Repeat.</em></p>
 ```
