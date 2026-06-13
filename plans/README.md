@@ -29,8 +29,12 @@ Three design decisions were made during the review and are baked into the plans:
 | 004  | Two-puzzle PNG rendering | P1 | M | 003 | DONE (commit ff1ee7e) |
 | 005  | PDF bundling | P2 | M | 004 | DONE (commit d4f1c6f) |
 | 006  | CLI / main.go wiring | P2 | M | 003, 004, 005 | DONE (commit ba8c6b1) |
+| 007  | manifest.json output | P3 | S | 006 | TODO |
+| 008  | Symmetric clue removal | P3 | M | 003 | TODO |
 
-**All plans complete — the tool builds, tests green, and runs end-to-end.**
+**Core build (001–006) complete — the tool builds, tests green, and runs
+end-to-end.** Plans 007–008 are optional enhancements (TODO); they are
+independent of each other and can be executed in either order.
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED (one-line rationale)
 
@@ -39,8 +43,11 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED 
 - 002 before 003: generation proves uniqueness via the solver's `CountSolutions`.
 - 003 before 004 and 006: rendering and the CLI need the `puzzle.Puzzle` type.
 - 004 before 005: the PDF bundles `image.Image` values produced by `RenderPage`.
-- 006 last: it wires generator + image + PDF together and is where the
-  end-to-end smoke test lives.
+- 006 last (of the core build): it wires generator + image + PDF together and is
+  where the end-to-end smoke test lives.
+- 007 (manifest) depends on 006 — it records per-puzzle data produced in `run`.
+- 008 (symmetric removal) depends on 003 — it reopens `puzzle/generate.go`'s
+  `carve`. 007 and 008 do not depend on each other.
 
 The verification gate is identical across all plans: `go build ./...`,
 `go vet ./...`, `go test ./...` must each exit 0. Plan 001 establishes it.
@@ -77,13 +84,19 @@ Findings folded into the plans (with the plan that fixes each):
 - Output overwrite behavior undefined → 006 (`os.Create` overwrite, documented).
 - `go.mod` module path / Go version not pinned → 001 (`sudoprint`, `go 1.22`).
 
-## Findings considered and deferred (not rejected, just out of scope)
+## Enhancements now planned
 
-- **Symmetric (rotational) clue removal** — makes puzzles look more
-  "published-quality." Deferred from 003 to keep the generator focused; noted in
-  003's maintenance notes.
-- **`manifest.json` output** (seed + per-puzzle clue counts) — auditable batches.
-  Deferred from 006; the per-puzzle stdout lines already deliver the core
-  "report actual" honesty. Noted in 006's maintenance notes.
+- **`manifest.json` output** (seed + per-puzzle clue counts) → **plan 007**
+  (was deferred from 006).
+- **Symmetric (rotational) clue removal** → **plan 008** (was deferred from 003).
+
+## Still deferred (not planned yet)
+
+- **Batch-generation concurrency** — parallelize generation across cores for
+  large `-n`. Only worth it at scale, and it changes `-seed` semantics
+  (per-puzzle derived seeds), so it must land as one contained, well-tested
+  change. Not planned now.
 - **Streaming pages to the PDF** instead of holding all images in memory —
   only matters at large `-n`; noted in 006's maintenance notes.
+- **`-symmetric=false` escape** for minimal-clue asymmetric puzzles — would
+  touch `Generate`'s signature; noted in 008's maintenance notes.
