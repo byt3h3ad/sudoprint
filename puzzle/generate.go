@@ -12,9 +12,9 @@ type difficultySpec struct {
 }
 
 var difficulties = map[string]difficultySpec{
-	"easy":   {target: 36, min: 34, max: 40},
-	"medium": {target: 30, min: 28, max: 34},
-	"hard":   {target: 25, min: 23, max: 30},
+	"easy":   {target: 35, min: 33, max: 38},
+	"medium": {target: 29, min: 27, max: 32},
+	"hard":   {target: 24, min: 22, max: 32},
 }
 
 // Puzzle holds a generated sudoku puzzle with its solution and metadata.
@@ -161,35 +161,64 @@ func generateSolved(rng *rand.Rand) Grid {
 	return g
 }
 
-// carve removes cells from a copy of solution to create a puzzle with as few
-// clues as possible while maintaining uniqueness. It stops early if it reaches
-// the target. Returns the clue grid and the clue count.
+// carve removes cells from a copy of solution in 180-degree rotationally
+// symmetric pairs, so the resulting clue pattern is symmetric (the look of a
+// published puzzle). The center cell (4,4) is its own mirror and is removed
+// singly. A group is removed only if doing so keeps the solution unique;
+// otherwise the whole group is restored. Carving stops once the clue count
+// reaches or drops just below spec.target. Returns the clue grid and the
+// actual clue count. All randomness uses rng.
 func carve(solution Grid, spec difficultySpec, rng *rand.Rand) (Grid, int) {
 	clues := solution
 
-	// Build shuffled list of all 81 positions.
-	positions := rng.Perm(81)
+	// Build the 41 symmetric groups: pairs {pos, 80-pos} for pos in 0..39,
+	// plus the center {40}. Shuffle the group order with rng.
+	type cell struct{ r, c int }
+	var groups [][]cell
+	for pos := 0; pos < 40; pos++ {
+		p := 80 - pos
+		groups = append(groups, []cell{
+			{pos / 9, pos % 9},
+			{p / 9, p % 9},
+		})
+	}
+	groups = append(groups, []cell{{4, 4}}) // center, self-symmetric
+	rng.Shuffle(len(groups), func(i, j int) { groups[i], groups[j] = groups[j], groups[i] })
 
 	removed := 0
-	for _, pos := range positions {
-		r := pos / 9
-		c := pos % 9
-
-		if clues[r][c] == 0 {
-			continue // already empty
+	for _, g := range groups {
+		// Skip if every cell in the group is already empty.
+		allEmpty := true
+		for _, cl := range g {
+			if clues[cl.r][cl.c] != 0 {
+				allEmpty = false
+				break
+			}
+		}
+		if allEmpty {
+			continue
 		}
 
-		saved := clues[r][c]
-		clues[r][c] = 0
+		// Tentatively remove the whole group.
+		saved := make([]int, len(g))
+		for i, cl := range g {
+			saved[i] = clues[cl.r][cl.c]
+			clues[cl.r][cl.c] = 0
+		}
 
 		if CountSolutions(clues, 2) == 1 {
-			removed++
+			removed += len(g)
 		} else {
-			clues[r][c] = saved // restore
+			// Restore the whole group.
+			for i, cl := range g {
+				clues[cl.r][cl.c] = saved[i]
+			}
 		}
 
-		// Stop early if we've reached the target clue count.
-		if 81-removed == spec.target {
+		// Stop once at or just below the target (steps of 2 mean exact target
+		// may be unreachable; <= keeps us near it, and Generate's range check
+		// accepts the result).
+		if 81-removed <= spec.target {
 			break
 		}
 	}

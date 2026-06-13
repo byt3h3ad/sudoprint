@@ -149,3 +149,47 @@ func TestUnknownDifficulty(t *testing.T) {
 		t.Error("Generate with unknown difficulty should return non-nil error")
 	}
 }
+
+// TestCluesAreSymmetric verifies that the clue pattern produced by Generate
+// has 180-degree rotational symmetry: cell (r,c) is empty iff cell (8-r,8-c)
+// is also empty.
+func TestCluesAreSymmetric(t *testing.T) {
+	rng := rand.New(rand.NewSource(1))
+	for _, diff := range []string{"easy", "medium", "hard"} {
+		p, err := Generate(1, diff, rng)
+		if err != nil {
+			t.Fatalf("Generate(%q): unexpected error: %v", diff, err)
+		}
+		for r := 0; r < 9; r++ {
+			for c := 0; c < 9; c++ {
+				if (p.Clues[r][c] == 0) != (p.Clues[8-r][8-c] == 0) {
+					t.Errorf("Generate(%q): asymmetric clue pattern at (%d,%d): Clues[%d][%d]=%d, Clues[%d][%d]=%d",
+						diff, r, c, r, c, p.Clues[r][c], 8-r, 8-c, p.Clues[8-r][8-c])
+				}
+			}
+		}
+	}
+}
+
+// TestClueCountInRangeMultiSeed checks that across seeds 0..7 and every
+// difficulty, the generated puzzle has a unique solution and its clue count
+// falls within the difficulty's configured [min, max].
+func TestClueCountInRangeMultiSeed(t *testing.T) {
+	for seed := 0; seed < 8; seed++ {
+		for _, diff := range []string{"easy", "medium", "hard"} {
+			spec := difficulties[diff]
+			rng := rand.New(rand.NewSource(int64(seed)))
+			p, err := Generate(1, diff, rng)
+			if err != nil {
+				t.Fatalf("seed %d Generate(%q): unexpected error: %v", seed, diff, err)
+			}
+			if CountSolutions(p.Clues, 2) != 1 {
+				t.Errorf("seed %d Generate(%q): puzzle is not uniquely solvable", seed, diff)
+			}
+			if p.ClueCount < spec.min || p.ClueCount > spec.max {
+				t.Errorf("seed %d Generate(%q): ClueCount=%d not in [%d, %d]",
+					seed, diff, p.ClueCount, spec.min, spec.max)
+			}
+		}
+	}
+}
