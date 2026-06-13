@@ -30,11 +30,11 @@ Three design decisions were made during the review and are baked into the plans:
 | 005  | PDF bundling | P2 | M | 004 | DONE (commit d4f1c6f) |
 | 006  | CLI / main.go wiring | P2 | M | 003, 004, 005 | DONE (commit ba8c6b1) |
 | 007  | manifest.json output | P3 | S | 006 | DONE (commit 6c9de40) |
-| 008  | Symmetric clue removal | P3 | M | 003 | TODO |
+| 008  | Symmetric clue removal | P3 | M | 003 | DONE (commit 28dad39) |
 
-**Core build (001–006) complete — the tool builds, tests green, and runs
-end-to-end.** Plans 007–008 are optional enhancements (TODO); they are
-independent of each other and can be executed in either order.
+**All plans (001–008) complete — the tool builds, all tests pass, runs
+end-to-end, emits a deterministic manifest, and produces symmetric
+(published-quality) puzzles.**
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED (one-line rationale)
 
