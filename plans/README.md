@@ -27,7 +27,7 @@ Three design decisions were made during the review and are baked into the plans:
 | 002  | Backtracking solver + counter  | P1 | S | 001 | DONE (commit 948e491) |
 | 003  | Puzzle generator (varied, ranged) | P1 | M | 002 | DONE (commit b340527) |
 | 004  | Two-puzzle PNG rendering | P1 | M | 003 | DONE (commit ff1ee7e) |
-| 005  | PDF bundling | P2 | M | 004 | TODO |
+| 005  | PDF bundling | P2 | M | 004 | DONE (commit d4f1c6f) |
 | 006  | CLI / main.go wiring | P2 | M | 003, 004, 005 | TODO |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED (one-line rationale)
@@ -45,13 +45,12 @@ The verification gate is identical across all plans: `go build ./...`,
 
 ## Post-execution follow-ups
 
-- **F1 (from plan 001, commit 7177557):** A `tools.go` file (`//go:build tools`)
-  was added to anchor `golang.org/x/image` and `github.com/signintech/gopdf` in
-  `go.mod` — without it, `go mod tidy` strips deps that no real code imports yet.
-  Once **plan 004** imports `golang.org/x/image/...` and **plan 005** imports
-  `github.com/signintech/gopdf` in actual source, `tools.go` is redundant and
-  should be deleted, followed by `go mod tidy` (the gate must stay green).
-  Plan 005's maintenance notes carry this reminder.
+- **F1 — ✅ RESOLVED in plan 005 (commit d4f1c6f).** A `tools.go` file
+  (`//go:build tools`) was added in plan 001 to anchor `golang.org/x/image` and
+  `github.com/signintech/gopdf` in `go.mod` before any real code imported them.
+  Once `render/font.go` (plan 004) imported `x/image` and `render/pdf.go`
+  (plan 005) imported `gopdf`, `tools.go` became redundant and was deleted;
+  `go mod tidy` was a no-op and `go.mod` still requires both deps. Gate green.
 - Note: plan 001 set the `go` directive to **1.25.0** (forced by
   `golang.org/x/image v0.42.0`, which itself requires go 1.25). Contributors need
   Go ≥ 1.25. This supersedes the "go 1.22" text inside plan 001.
