@@ -6,10 +6,11 @@
 > improvise. When done, update the status row for this plan in `plans/README.md`.
 >
 > **Drift check (run first)**: This plan was written against commit `e90880a`.
-> Run `git diff --stat e90880a..HEAD -- render/`. Plan 004 should have added
-> `render/image.go`, `render/image_test.go`, `render/font.go`, and
-> `render/fonts/`. Confirm `RenderPage` matches "Current state". If
-> `render/pdf.go` already exists, read it and compare against the Target; on a
+> Run `git diff --stat e90880a..HEAD -- render/ fonts/`. Plan 004 should have
+> added `render/image.go`, `render/image_test.go`, `render/font.go`, and
+> `fonts/fonts.go` (the font is embedded via a single-copy `fonts` package — there
+> is NO `render/fonts/` directory). Confirm `RenderPage` matches "Current state".
+> If `render/pdf.go` already exists, read it and compare against the Target; on a
 > mismatch, STOP.
 
 ## Status
@@ -50,8 +51,11 @@ available and falls back safely.
 **In scope**:
 - `render/pdf.go` (create)
 - `render/pdf_test.go` (create)
+- `tools.go` (DELETE — follow-up F1; see Step 4)
+- `go.mod`, `go.sum` (only the changes produced by `go mod tidy` after deleting
+  `tools.go` — do not hand-edit them)
 
-**Out of scope**: `render/image.go`, `puzzle/*`, `main.go`.
+**Out of scope**: `render/image.go`, `render/font.go`, `fonts/*`, `puzzle/*`, `main.go`.
 
 ## Git workflow
 
@@ -149,7 +153,25 @@ Implement per the Target and the API path chosen in Step 1.
 **Verify**: `go test ./render/` → `ok`, all render tests pass (plan 004's plus
 these new ones).
 
-### Step 4: Confirm the gate
+### Step 4: Remove the now-redundant `tools.go` (follow-up F1)
+
+The root `tools.go` (`//go:build tools`) existed only to keep `golang.org/x/image`
+and `github.com/signintech/gopdf` in `go.mod` before any real code imported them.
+Now `render/font.go` imports `golang.org/x/image/...` and your new `render/pdf.go`
+imports `github.com/signintech/gopdf`, so `tools.go` is redundant.
+
+1. Delete the file `tools.go` from the repo root.
+2. Run `go mod tidy`.
+3. Confirm `go.mod` STILL lists both `golang.org/x/image` and
+   `github.com/signintech/gopdf` in a `require` block.
+
+**Verify**:
+- `test ! -e tools.go` → exits 0 (file gone)
+- `grep -c "golang.org/x/image" go.mod` → ≥ 1 AND `grep -c "signintech/gopdf" go.mod` → ≥ 1
+- If `go mod tidy` REMOVES either dependency, the real imports are missing — STOP
+  and report (do NOT recreate `tools.go`; investigate why the import isn't present).
+
+### Step 5: Confirm the gate
 
 **Verify**:
 - `go build ./...` → exit 0
@@ -171,6 +193,8 @@ ALL must hold:
 - [ ] Output file begins with `%PDF` and is non-empty
 - [ ] Pages are A4 landscape and the image fills the page (verified by the
       page-rect usage in code)
+- [ ] `tools.go` deleted; `go mod tidy` run; `go.mod` still requires
+      `golang.org/x/image` and `github.com/signintech/gopdf` (follow-up F1 done)
 - [ ] `go build ./...`, `go vet ./...`, `go test ./...` all exit 0
 - [ ] `plans/README.md` status row for 005 updated to DONE
 
