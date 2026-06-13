@@ -186,6 +186,15 @@ Stop and report back if:
 
 ## Maintenance notes
 
+- **Follow-up F1 (cleanup):** Plan 001 added a root `tools.go` (`//go:build
+  tools`) solely to keep `golang.org/x/image` and `github.com/signintech/gopdf`
+  in `go.mod` before any real code imported them. After this plan imports
+  `github.com/signintech/gopdf` (and plan 004 imports `golang.org/x/image/...`),
+  `tools.go` is redundant. As part of this plan, **delete `tools.go` from the
+  repo root, then run `go mod tidy`** and confirm `go.mod` still requires both
+  deps and the gate (`go build/vet/test ./...`) stays green. If `go mod tidy`
+  removes either dep after deleting `tools.go`, that means the real imports
+  aren't in place yet — STOP and report rather than leaving `tools.go` in.
 - If `render/image.go` ever changes page dimensions, the PDF page rect
   (841.89×595.28 pt) still corresponds to A4 landscape regardless of image px —
   `ImageFrom` scales the image into the rect. Only revisit if you switch paper

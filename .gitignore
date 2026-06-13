@@ -26,6 +26,9 @@ solution_*.png
 puzzles.pdf
 solutions.pdf
 
+# Claude Code agent worktrees (transient; created by the execute flow)
+/.claude/worktrees/
+
 # Editor / IDE
 /.idea/
 /.vscode/

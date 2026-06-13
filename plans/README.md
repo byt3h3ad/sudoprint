@@ -23,7 +23,7 @@ Three design decisions were made during the review and are baked into the plans:
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
-| 001  | Scaffold, deps, green baseline | P1 | S | — | TODO |
+| 001  | Scaffold, deps, green baseline | P1 | S | — | DONE (commit 7177557; see follow-up F1) |
 | 002  | Backtracking solver + counter  | P1 | S | 001 | TODO |
 | 003  | Puzzle generator (varied, ranged) | P1 | M | 002 | TODO |
 | 004  | Two-puzzle PNG rendering | P1 | M | 003 | TODO |
@@ -42,6 +42,19 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED 
 
 The verification gate is identical across all plans: `go build ./...`,
 `go vet ./...`, `go test ./...` must each exit 0. Plan 001 establishes it.
+
+## Post-execution follow-ups
+
+- **F1 (from plan 001, commit 7177557):** A `tools.go` file (`//go:build tools`)
+  was added to anchor `golang.org/x/image` and `github.com/signintech/gopdf` in
+  `go.mod` — without it, `go mod tidy` strips deps that no real code imports yet.
+  Once **plan 004** imports `golang.org/x/image/...` and **plan 005** imports
+  `github.com/signintech/gopdf` in actual source, `tools.go` is redundant and
+  should be deleted, followed by `go mod tidy` (the gate must stay green).
+  Plan 005's maintenance notes carry this reminder.
+- Note: plan 001 set the `go` directive to **1.25.0** (forced by
+  `golang.org/x/image v0.42.0`, which itself requires go 1.25). Contributors need
+  Go ≥ 1.25. This supersedes the "go 1.22" text inside plan 001.
 
 ## What was reviewed (and what wasn't)
 
