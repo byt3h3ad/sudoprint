@@ -2,15 +2,8 @@
 # Validate with: goreleaser check
 version: 2
 
-before:
-  hooks:
-    - go mod tidy
-    - go mod download
-
 builds:
-  - binary: sudoprint
-    main: .
-    env:
+  - env:
       - CGO_ENABLED=0
     goos: [linux, darwin, windows]
     goarch: [amd64, arm64]
@@ -20,8 +13,6 @@ builds:
 
 archives:
   - formats: [tar.gz]
-    name_template: >-
-      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
     format_overrides:
       - goos: windows
         formats: [zip]
@@ -31,7 +22,6 @@ archives:
 
 checksum:
   name_template: checksums.txt
-  algorithm: sha256
 
 changelog:
   sort: asc
@@ -47,5 +37,4 @@ changelog:
       - '^test'
 
 release:
-  draft: false
   prerelease: auto # tags like v1.0.0-rc1 are flagged as pre-releases automatically
