@@ -10,7 +10,7 @@
 ├───────┼───────┼───────┤   two puzzles per sheet, no clutter,
 │ 8 · · │ · · · │ · · 9 │   no decoration. Just the puzzle.
 │ · 4 6 │ · 3 · │ · 8 · │
-│ · · 3 │ 8 4 · │ 6 7 · │   PNG always. PDF on request.
+│ · · 3 │ 8 4 · │ 6 7 · │   Print-ready PDFs by default.
 ├───────┼───────┼───────┤   Reproducible. Symmetric. Honest.
 │ · · · │ · · · │ · · · │
 │ 4 2 · │ 5 7 · │ · · · │
@@ -47,11 +47,14 @@ Three principles shaped it:
 # Build
 go build -o sudoprint .
 
-# 5 pages (10 puzzles), medium difficulty, PNGs only
+# 5 pages (10 puzzles), medium difficulty — PDFs (PNGs discarded once bundled)
 ./sudoprint -n 5 -d medium -o ./out
 
-# 10 hard pages, PNGs + PDFs, discard the PNGs once bundled
-./sudoprint -n 10 -d hard -o ./out -pdf -keep-png=false
+# Same, but also keep the per-page PNGs
+./sudoprint -n 10 -d hard -o ./out -keep-png
+
+# PNGs only, no PDF
+./sudoprint -n 5 -d medium -o ./out -pdf=false
 
 # Reproducible batch — same seed always yields the same puzzles
 ./sudoprint -n 3 -d easy -seed 42 -o ./out
@@ -72,12 +75,12 @@ sudoprint [flags]
 | `-n`        | int    | `1`      | Number of pages to generate (**2 puzzles per page**)       |
 | `-d`        | string | `medium` | Difficulty: `easy`, `medium`, or `hard`                    |
 | `-o`        | string | `.`      | Output directory (created if it doesn't exist)             |
-| `-pdf`      | bool   | `false`  | Also bundle the pages into PDFs                            |
-| `-keep-png` | bool   | `true`   | Keep PNGs when `-pdf` is set; `-keep-png=false` to discard |
+| `-pdf`      | bool   | `true`   | Bundle the pages into PDFs; `-pdf=false` to skip           |
+| `-keep-png` | bool   | `false`  | Keep the PNGs alongside the PDFs instead of discarding them |
 | `-seed`     | int64  | random   | RNG seed for reproducible output                           |
 
-> **Tip:** Go's `flag` package needs `-keep-png=false` (with the `=`), not
-> `-keep-png false`.
+> **Tip:** Go's `flag` package needs `-pdf=false` (with the `=`) to disable a
+> bool flag; `-keep-png` on its own turns it on.
 
 Every run prints the seed it used (even a random one) and the **actual clue
 count** of each puzzle, so nothing about a batch is hidden:
@@ -93,15 +96,17 @@ done: seed=42, 5 file(s) written to ./out
 
 ## Output
 
-PNGs are always written. PDFs are added with `-pdf`.
+PDFs are written by default. PNGs are intermediate artifacts, discarded once
+the PDFs are bundled unless you pass `-keep-png` (or `-pdf=false`, which skips
+the PDF step and leaves the PNGs in place).
 
-| File                 | When        | Contents                                  |
-|----------------------|-------------|-------------------------------------------|
-| `puzzle_NNN.png`     | always      | One page = two puzzles (the clues)        |
-| `solution_NNN.png`   | always      | The matching solved grids (in grey)       |
-| `puzzles.pdf`        | `-pdf`      | All puzzle pages, in order                |
-| `solutions.pdf`      | `-pdf`      | All solution pages, in order              |
-| `manifest.json`      | always      | The batch record (see below)              |
+| File                 | When            | Contents                                  |
+|----------------------|-----------------|-------------------------------------------|
+| `puzzles.pdf`        | default         | All puzzle pages, in order                |
+| `solutions.pdf`      | default         | All solution pages, in order              |
+| `puzzle_NNN.png`     | `-keep-png` / `-pdf=false` | One page = two puzzles (the clues) |
+| `solution_NNN.png`   | `-keep-png` / `-pdf=false` | The matching solved grids (in grey) |
+| `manifest.json`      | always          | The batch record (see below)              |
 
 Pages are **A4 landscape at 300 DPI (3508 × 2480 px)** — split down the middle,
 one puzzle per half, vertically centered, with a small `#N · DIFFICULTY` caption
@@ -124,7 +129,8 @@ durable record of a batch: reproduce it, audit it, or feed it to your own tools.
 }
 ```
 
-The manifest survives `-keep-png=false` — it's metadata, not a render artifact.
+The manifest is always written and never cleaned up — it's metadata, not a
+render artifact.
 
 ---
 

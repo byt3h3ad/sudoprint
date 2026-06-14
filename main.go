@@ -18,8 +18,8 @@ func main() {
 	n := flag.Int("n", 1, "number of pages (2 puzzles per page)")
 	d := flag.String("d", "medium", "difficulty: easy, medium, hard")
 	out := flag.String("o", ".", "output directory")
-	pdf := flag.Bool("pdf", false, "also produce PDFs")
-	keepPNG := flag.Bool("keep-png", true, "keep PNGs when -pdf is set")
+	pdf := flag.Bool("pdf", true, "produce PDFs (-pdf=false to skip)")
+	keepPNG := flag.Bool("keep-png", false, "keep the PNGs alongside the PDFs")
 	seed := flag.Int64("seed", 0, "RNG seed (0 = random)")
 	flag.Parse()
 

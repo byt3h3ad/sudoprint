@@ -5,7 +5,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 `sudoprint` is a single-binary Go CLI that generates print-ready sudoku puzzles
-as A4-landscape PNGs (and optionally PDFs), two puzzles per page. Module path is
+as A4-landscape PDFs (with intermediate PNGs), two puzzles per page. By default
+it bundles PDFs and discards the PNGs; `-pdf=false` skips the PDF and keeps the
+PNGs, and `-keep-png` keeps both. Module path is
 `sudoprint`; requires **Go 1.25+** (transitive requirement of
 `golang.org/x/image`). Two direct deps, no CGO: `golang.org/x/image` (text) and
 `github.com/signintech/gopdf` (PDF).
@@ -86,8 +88,9 @@ These are load-bearing contracts, several enforced by tests:
   meaningfully sparser than `medium`.)
 - **Manifest is seed-derived only.** `manifest.json` must contain no timestamp or
   other non-deterministic field, or determinism breaks.
-- **PDF-before-delete.** With `-keep-png=false`, PNGs are removed only *after*
-  both PDFs are written successfully; the manifest is never deleted.
+- **PDF-before-delete.** When PNGs are discarded (the default: `-pdf` on,
+  `-keep-png` off), they are removed only *after* both PDFs are written
+  successfully; the manifest is never deleted.
 
 ## Conventions
 
