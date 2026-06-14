@@ -13,6 +13,9 @@
 go.work
 go.work.sum
 
+# GoReleaser build output
+/dist/
+
 # Test & coverage output
 coverage.out
 coverage.html

@@ -14,7 +14,11 @@ import (
 	"sudoprint/render"
 )
 
+// version is overridden at release build time via -ldflags "-X main.version=...".
+var version = "dev"
+
 func main() {
+	showVersion := flag.Bool("version", false, "print version and exit")
 	n := flag.Int("n", 1, "number of pages (2 puzzles per page)")
 	d := flag.String("d", "medium", "difficulty: easy, medium, hard")
 	out := flag.String("o", ".", "output directory")
@@ -22,6 +26,11 @@ func main() {
 	keepPNG := flag.Bool("keep-png", false, "keep the PNGs alongside the PDFs")
 	seed := flag.Int64("seed", 0, "RNG seed (0 = random)")
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Println("sudoprint", version)
+		return
+	}
 
 	if err := run(*n, *d, *out, *pdf, *keepPNG, *seed); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)

@@ -37,6 +37,20 @@ go test -c -o t.exe ./puzzle && ./t.exe -test.run TestCluesAreSymmetric -test.v
 The built `sudoprint.exe` itself runs fine from the project dir (only `%TEMP%`
 execution is blocked).
 
+## Releasing
+
+Pushing a tag matching `v*` (e.g. `git tag v1.0.0 && git push origin v1.0.0`)
+triggers `.github/workflows/release.yml`, which runs **GoReleaser**
+(`.goreleaser.yaml`) on a single Linux runner. Because the build is pure Go
+(`CGO_ENABLED=0`), it cross-compiles all six targets (linux/darwin/windows ×
+amd64/arm64), archives them (tar.gz; zip for windows) with `README.md`+`LICENSE`,
+writes `checksums.txt`, and publishes a GitHub Release with a grouped changelog.
+The release version is stamped into the binary via
+`-ldflags "-X main.version=..."` and surfaced by `sudoprint -version` (the
+package-level `version` var in `main.go` defaults to `"dev"` for local builds).
+Validate config changes locally with `goreleaser check` and
+`goreleaser build --snapshot --clean`.
+
 ## Architecture
 
 The pipeline is linear and each package does one job. `main.go`'s `run()`

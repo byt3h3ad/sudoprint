@@ -1,0 +1,51 @@
+# GoReleaser config — https://goreleaser.com
+# Validate with: goreleaser check
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+    - go mod download
+
+builds:
+  - binary: sudoprint
+    main: .
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+    # All six goos/goarch combinations are valid for pure Go — no `ignore` needed.
+
+archives:
+  - formats: [tar.gz]
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  use: github
+  groups:
+    - { title: Features, regexp: '^feat', order: 0 }
+    - { title: Fixes, regexp: '^fix', order: 1 }
+    - { title: Documentation, regexp: '^docs', order: 2 }
+    - { title: Others, order: 999 }
+  filters:
+    exclude:
+      - '^chore'
+      - '^test'
+
+release:
+  draft: false
+  prerelease: auto # tags like v1.0.0-rc1 are flagged as pre-releases automatically

@@ -41,6 +41,31 @@ Three principles shaped it:
 
 ---
 
+## Install
+
+**Download a prebuilt binary** (no Go toolchain needed) from the
+[Releases](https://github.com/byt3h3ad/sudoprint/releases) page. Grab the archive
+for your OS/arch, unpack it, and run the binary:
+
+```bash
+# example: Linux x86-64
+tar -xzf sudoprint_*_linux_amd64.tar.gz
+./sudoprint -version
+```
+
+Releases ship for **linux**, **macOS**, and **windows** on both `amd64` and
+`arm64`, each with a `checksums.txt` for verification.
+
+**Or build from source** (requires **Go 1.25+**, a transitive requirement of
+`golang.org/x/image`):
+
+```bash
+git clone https://github.com/byt3h3ad/sudoprint && cd sudoprint
+go build -o sudoprint .
+```
+
+---
+
 ## Quick start
 
 ```bash
@@ -78,6 +103,7 @@ sudoprint [flags]
 | `-pdf`      | bool   | `true`   | Bundle the pages into PDFs; `-pdf=false` to skip           |
 | `-keep-png` | bool   | `false`  | Keep the PNGs alongside the PDFs instead of discarding them |
 | `-seed`     | int64  | random   | RNG seed for reproducible output                           |
+| `-version`  | bool   | `false`  | Print the version and exit                                 |
 
 > **Tip:** Go's `flag` package needs `-pdf=false` (with the `=`) to disable a
 > bool flag; `-keep-png` on its own turns it on.
