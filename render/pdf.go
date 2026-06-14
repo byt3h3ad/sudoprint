@@ -1,9 +1,5 @@
 package render
 
-// API path used: ImageFrom(img image.Image, x, y float64, rect *gopdf.Rect) error
-// Confirmed present in gopdf v0.36.1 via `go doc github.com/signintech/gopdf GoPdf`.
-// PageSizeA4Landscape = &Rect{W: 842, H: 595, unitOverride: ...} confirmed via go doc.
-
 import (
 	"fmt"
 	"image"

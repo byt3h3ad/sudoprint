@@ -15,11 +15,10 @@ import (
 )
 
 const (
-	pageW = 3508
-	pageH = 2480
-	halfW = 1754
-	gridW = 1228
-	gridH = 1228
+	pageW    = 3508
+	pageH    = 2480
+	halfW    = 1754
+	gridSize = 1228
 )
 
 // fillRect draws a solid rectangle on dst from (x0,y0) to (x1,y1) (exclusive).
@@ -41,40 +40,40 @@ func linePositions(origin, total int) [10]int {
 // drawGrid renders a single puzzle half onto dst.
 // halfX0 is the left edge of this half (0 for left, 1754 for right).
 func drawGrid(dst *image.RGBA, p puzzle.Puzzle, solution bool, halfX0 int) error {
-	gridX := halfX0 + (halfW-gridW)/2 // centers horizontally in the half
-	gridY := (pageH - gridH) / 2      // centers vertically
+	gridX := halfX0 + (halfW-gridSize)/2 // centers horizontally in the half
+	gridY := (pageH - gridSize) / 2      // centers vertically
 
-	xs := linePositions(gridX, gridW)
-	ys := linePositions(gridY, gridH)
+	xs := linePositions(gridX, gridSize)
+	ys := linePositions(gridY, gridSize)
 
 	// --- Draw cell lines (1px #CCCCCC) ---
 	cellColor := color.RGBA{0xCC, 0xCC, 0xCC, 0xFF}
 	for i := 0; i <= 9; i++ {
 		// Vertical line at xs[i]
-		fillRect(dst, xs[i], gridY, xs[i]+1, gridY+gridH, cellColor)
+		fillRect(dst, xs[i], gridY, xs[i]+1, gridY+gridSize, cellColor)
 		// Horizontal line at ys[i]
-		fillRect(dst, gridX, ys[i], gridX+gridW, ys[i]+1, cellColor)
+		fillRect(dst, gridX, ys[i], gridX+gridSize, ys[i]+1, cellColor)
 	}
 
 	// --- Draw box lines (3px #000000) at i in {0,3,6,9} ---
 	boxColor := color.RGBA{0x00, 0x00, 0x00, 0xFF}
 	for _, i := range []int{0, 3, 6, 9} {
 		// Vertical box line
-		fillRect(dst, xs[i]-1, gridY, xs[i]+2, gridY+gridH, boxColor)
+		fillRect(dst, xs[i]-1, gridY, xs[i]+2, gridY+gridSize, boxColor)
 		// Horizontal box line
-		fillRect(dst, gridX, ys[i]-1, gridX+gridW, ys[i]+2, boxColor)
+		fillRect(dst, gridX, ys[i]-1, gridX+gridSize, ys[i]+2, boxColor)
 	}
 
 	// --- Draw outer border (4px #000000) as four thick rects on perimeter ---
 	outerColor := color.RGBA{0x00, 0x00, 0x00, 0xFF}
 	// Top
-	fillRect(dst, gridX-2, gridY-2, gridX+gridW+2, gridY+2, outerColor)
+	fillRect(dst, gridX-2, gridY-2, gridX+gridSize+2, gridY+2, outerColor)
 	// Bottom
-	fillRect(dst, gridX-2, gridY+gridH-2, gridX+gridW+2, gridY+gridH+2, outerColor)
+	fillRect(dst, gridX-2, gridY+gridSize-2, gridX+gridSize+2, gridY+gridSize+2, outerColor)
 	// Left
-	fillRect(dst, gridX-2, gridY-2, gridX+2, gridY+gridH+2, outerColor)
+	fillRect(dst, gridX-2, gridY-2, gridX+2, gridY+gridSize+2, outerColor)
 	// Right
-	fillRect(dst, gridX+gridW-2, gridY-2, gridX+gridW+2, gridY+gridH+2, outerColor)
+	fillRect(dst, gridX+gridSize-2, gridY-2, gridX+gridSize+2, gridY+gridSize+2, outerColor)
 
 	// --- Draw digits ---
 	// Determine which grid and color to use.
@@ -88,8 +87,8 @@ func drawGrid(dst *image.RGBA, p puzzle.Puzzle, solution bool, halfX0 int) error
 		digitColor = color.RGBA{0x00, 0x00, 0x00, 0xFF}
 	}
 
-	// Cell height in pixels: roughly gridH/9, use ~55% for font size.
-	cellHeightApprox := float64(gridH) / 9.0
+	// Cell height in pixels: roughly gridSize/9, use ~55% for font size.
+	cellHeightApprox := float64(gridSize) / 9.0
 	digitPx := cellHeightApprox * 0.55
 
 	face, err := newFace(digitPx)
@@ -147,7 +146,7 @@ func drawGrid(dst *image.RGBA, p puzzle.Puzzle, solution bool, halfX0 int) error
 	defer labelFace.Close()
 
 	labelColor := color.RGBA{0xAA, 0xAA, 0xAA, 0xFF}
-	labelY := gridY + gridH + 40
+	labelY := gridY + gridSize + 40
 
 	ld := &font.Drawer{
 		Dst:  dst,
